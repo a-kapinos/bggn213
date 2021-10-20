@@ -2,7 +2,7 @@
 title: 'Class 6: R Functions'
 author: 'Andrew Kapinos (PID: A12708564)'
 date: "10/15/2021"
-output: pdf_document
+output: github_document
 ---
 ## Quick Rmarkdown Intro
 
