@@ -1,2 +1,2 @@
 # bggn213
-Introduction to Bioinformatics
+Introduction to Bioinformatics at UC San Diego
