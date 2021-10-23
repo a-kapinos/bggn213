@@ -29,11 +29,12 @@ Andrew Kapinos
 
 We need to break down the original code into its various steps.
 
-Step 1: Load bio3d packages.  
-Step 2: Access online PDB file and assign to an object.  
-Step 3: Trim PDB file to only include chain A.  
-Step 4: Describe b for atoms in chain A.  
-Step 5: Plot data.
+Step 1: Loads bio3d packages.  
+Step 2: Accesses online PDB file and assigns all data to an object.  
+Step 3: Trims PDB file to only include chain A alpha-carbons and assigns
+filtered data to an object.  
+Step 4: Describes B-factor data for chain A alpha-carbons.  
+Step 5: Plots B-factor data.
 
 Starting at step 2, we can generalize the code given for accessing the
 PDB file and assigning its output to an object.
@@ -46,24 +47,24 @@ PDB file and assigning its output to an object.
 # Simplified version
 library(bio3d)
 x <- "4AKE"
-x <- read.pdb(x)
+pdb_data <- read.pdb(x)
 ```
 
     ##   Note: Accessing on-line PDB file
 
 Moving onto step 3, let’s generalize the code used to trim the PDB file
-to include only chain A.
+to include only chain A alpha-carbons.
 
 ``` r
 # Original code
 # s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
 
 # Simplified version
-chainA <- trim.pdb(x, chain="A", elety="CA")
+chainA <- trim.pdb(pdb_data, chain="A", elety="CA")
 ```
 
-Moving onto step 4, let’s generalize the code used to describe *b
-factor* for atoms in chain A.
+Moving onto step 4, let’s generalize the code used to describe
+*B-factor* for alpha-carbons in chain A.
 
 ``` r
 # Original code
@@ -73,7 +74,8 @@ factor* for atoms in chain A.
 b <- chainA$atom$b
 ```
 
-Finally, in step 5, we can generalize the code used to plot the data.
+Finally, in step 5, we can generalize the code used to plot the B-factor
+data.
 
 ``` r
 # Original code
@@ -90,35 +92,50 @@ Let’s put our generalized pieces all together!
 ``` r
 x <- "4AKE"
 library(bio3d)
-x <- read.pdb(x)
+pdb_data <- read.pdb(x)
 ```
 
     ##   Note: Accessing on-line PDB file
 
     ## Warning in get.pdb(file, path = tempdir(), verbose = FALSE): /var/folders/08/
-    ## v95p5lpj0c1dymxdpt1292pw0000gn/T//RtmpZBJEW0/4AKE.pdb exists. Skipping download
+    ## v95p5lpj0c1dymxdpt1292pw0000gn/T//Rtmp70XL30/4AKE.pdb exists. Skipping download
 
 ``` r
-chainA <- trim.pdb(x, chain="A", elety="CA")
+chainA <- trim.pdb(pdb_data, chain="A", elety="CA")
 b <- chainA$atom$b
 plotb3(b, sse=chainA, typ="l", ylab="Bfactor")
 ```
 
 ![](class06-supplemental_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
-Now, let’s write our code into a function.
+Now, let’s write our code into a function. I’ve added an optional
+argument, **main=x** to the plotb3() function, which will add the PDB
+code to each output graph as a plot title. This will make it easier to
+keep track of our output plots if we are using apply() to run the
+function on a data frame containing PDB IDs.
 
 ``` r
 prot_drug_interaction <- function(x) {
+  #Load bio3d package if not already done
   library(bio3d)
-  x <- read.pdb(x)
-  chainA <- trim.pdb(x, chain="A", elety="CA")
+  
+  # Access PDB using an input PDB ID, "x", and store data to an object
+  pdb_data <- read.pdb(x)
+ 
+   # Trim the PDB info to only include the data for alpha-carbons in chain A
+  chainA <- trim.pdb(pdb_data, chain="A", elety="CA")
+  
+  # Create a vector with B-factor data for alpha-carbons in chain A
   b <- chainA$atom$b
-  plotb3(b, sse=chainA, typ="l", ylab="Bfactor")
+ 
+  # Plot the B-factor data for alpha-carbons in chain A
+  plotb3(b, sse=chainA, typ="l", ylab="Bfactor",main=x)
 }
 ```
 
-And let’s verify that it works for one of our sample inputs.
+And let’s verify that it works for one of our sample inputs. To use the
+function, we only need to provide the function with the PDB ID code of
+the protein we are interested in.
 
 ``` r
 prot_drug_interaction("4AKE")
@@ -127,9 +144,12 @@ prot_drug_interaction("4AKE")
     ##   Note: Accessing on-line PDB file
 
     ## Warning in get.pdb(file, path = tempdir(), verbose = FALSE): /var/folders/08/
-    ## v95p5lpj0c1dymxdpt1292pw0000gn/T//RtmpZBJEW0/4AKE.pdb exists. Skipping download
+    ## v95p5lpj0c1dymxdpt1292pw0000gn/T//Rtmp70XL30/4AKE.pdb exists. Skipping download
 
 ![](class06-supplemental_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+As we can see, the output of the function is a line plot displaying
+B-factor data for alpha-carbons in chain A of the protein of interest.
 
 Let’s create a data frame that contains the PDB codes provided as
 example inputs above. Then, we can use *apply()* to run the function on
@@ -154,7 +174,7 @@ apply(PDB_codes,1,prot_drug_interaction)
     ##   Note: Accessing on-line PDB file
 
     ## Warning in get.pdb(file, path = tempdir(), verbose = FALSE): /var/folders/08/
-    ## v95p5lpj0c1dymxdpt1292pw0000gn/T//RtmpZBJEW0/4AKE.pdb exists. Skipping download
+    ## v95p5lpj0c1dymxdpt1292pw0000gn/T//Rtmp70XL30/4AKE.pdb exists. Skipping download
 
 ![](class06-supplemental_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
