@@ -5,29 +5,32 @@ Andrew Kapinos
 
 # Can you improve this analysis code?
 
-library(bio3d) s1 \<- read.pdb(“4AKE”) # kinase with drug s2 \<-
-read.pdb(“1AKE”) # kinase no drug s3 \<- read.pdb(“1E4Y”) # kinase with
-drug
+library(bio3d)  
+s1 \<- read.pdb(“4AKE”) # kinase with drug  
+s2 \<- read.pdb(“1AKE”) # kinase no drug  
+s3 \<- read.pdb(“1E4Y”) # kinase with drug
 
-s1.chainA \<- trim.pdb(s1, chain=“A”, elety=“CA”) s2.chainA \<-
-trim.pdb(s2, chain=“A”, elety=“CA”) s3.chainA \<- trim.pdb(s3,
-chain=“A”, elety=“CA”)
+s1.chainA \<- trim.pdb(s1, chain=“A”, elety=“CA”)  
+s2.chainA \<- trim.pdb(s2, chain=“A”, elety=“CA”)  
+s3.chainA \<- trim.pdb(s3, chain=“A”, elety=“CA”)
 
-s1.b \<- s1.chainA*a**t**o**m*b s2.b \<- s2.chainA*a**t**o**m*b s3.b \<-
-s3.chainA*a**t**o**m*b
+s1.b \<- s1.chainA*a**t**o**m*b  
+s2.b \<- s2.chainA*a**t**o**m*b  
+s3.b \<- s3.chainA*a**t**o**m*b
 
-plotb3(s1.b, sse=s1.chainA, typ=“l”, ylab=“Bfactor”) plotb3(s2.b,
-sse=s2.chainA, typ=“l”, ylab=“Bfactor”) plotb3(s3.b, sse=s3.chainA,
-typ=“l”, ylab=“Bfactor”)
+plotb3(s1.b, sse=s1.chainA, typ=“l”, ylab=“Bfactor”)  
+plotb3(s2.b, sse=s2.chainA, typ=“l”, ylab=“Bfactor”)  
+plotb3(s3.b, sse=s3.chainA, typ=“l”, ylab=“Bfactor”)
 
 > Q6. How would you generalize the original code above to work with any
 > set of input protein structures?
 
 We need to break down the original code into its various steps.
 
-Step 1: Load bio3d packages (not neccessary to include in function).
-Step 2: Access online PDB file and assign to an object. Step 3: Trim PDB
-file to only include chain A. Step 4: Describe b for atoms in chain A.
+Step 1: Load bio3d packages (not neccessary to include in function).  
+Step 2: Access online PDB file and assign to an object.  
+Step 3: Trim PDB file to only include chain A.  
+Step 4: Describe b for atoms in chain A.  
 Step 5: Plot data.
 
 Starting at step 2, we can simplify the code given for accessing the PDB
@@ -78,7 +81,7 @@ x <- read.pdb(x)
     ##   Note: Accessing on-line PDB file
 
     ## Warning in get.pdb(file, path = tempdir(), verbose = FALSE): /var/folders/08/
-    ## v95p5lpj0c1dymxdpt1292pw0000gn/T//RtmpsBv39Q/4AKE.pdb exists. Skipping download
+    ## v95p5lpj0c1dymxdpt1292pw0000gn/T//RtmpR3rKPY/4AKE.pdb exists. Skipping download
 
 ``` r
 x
@@ -246,7 +249,7 @@ x <- read.pdb(x)
     ##   Note: Accessing on-line PDB file
 
     ## Warning in get.pdb(file, path = tempdir(), verbose = FALSE): /var/folders/08/
-    ## v95p5lpj0c1dymxdpt1292pw0000gn/T//RtmpsBv39Q/4AKE.pdb exists. Skipping download
+    ## v95p5lpj0c1dymxdpt1292pw0000gn/T//RtmpR3rKPY/4AKE.pdb exists. Skipping download
 
 ``` r
 chainA <- trim.pdb(x, chain="A", elety="CA")
@@ -277,7 +280,7 @@ prot_drug_interaction("4AKE")
     ##   Note: Accessing on-line PDB file
 
     ## Warning in get.pdb(file, path = tempdir(), verbose = FALSE): /var/folders/08/
-    ## v95p5lpj0c1dymxdpt1292pw0000gn/T//RtmpsBv39Q/4AKE.pdb exists. Skipping download
+    ## v95p5lpj0c1dymxdpt1292pw0000gn/T//RtmpR3rKPY/4AKE.pdb exists. Skipping download
 
 ![](class06-supplemental_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
@@ -294,7 +297,7 @@ apply(PDB_codes,1,prot_drug_interaction)
     ##   Note: Accessing on-line PDB file
 
     ## Warning in get.pdb(file, path = tempdir(), verbose = FALSE): /var/folders/08/
-    ## v95p5lpj0c1dymxdpt1292pw0000gn/T//RtmpsBv39Q/4AKE.pdb exists. Skipping download
+    ## v95p5lpj0c1dymxdpt1292pw0000gn/T//RtmpR3rKPY/4AKE.pdb exists. Skipping download
 
 ![](class06-supplemental_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
