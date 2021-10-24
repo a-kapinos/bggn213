@@ -92,9 +92,17 @@ plotb3(b, sse=chainA, typ="l", ylab="Bfactor")
 Now, let's write our code into a function. I've added an optional argument, **main=x** to the plotb3() function, which will add the PDB code to each output graph as a plot title. This will make it easier to keep track of our output plots if we are using apply() to run the function on a data frame containing PDB IDs.
 
 ```{r}
+# Load bio3d package if not already done
+library(bio3d)
+
 prot_drug_interaction <- function(x) {
-  #Load bio3d package if not already done
-  library(bio3d)
+  # Input: PDB ID/code for protein of interest
+  # Output: Line plot displaying B-factor data for alpha-carbons in chain A
+  #   of the protein of interest
+  # Description: Uses PDB ID/code to access the PDB database and download 
+  #   data relevant to protein of interest. Will filter data specific to   
+  #   chain A alpha-carbons and relevant B-factor values. Generates a line 
+  #   plot of these B-factor values.
   
   # Access PDB using an input PDB ID, "x", and store data to an object
   pdb_data <- read.pdb(x)
