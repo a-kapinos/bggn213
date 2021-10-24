@@ -2,7 +2,7 @@
 title: "Machine Learning 01"
 author: "Andrew Kapinos"
 date: "10/22/2021"
-output: github_document
+output: pdf_document
 ---
 
 # Clustering methods
@@ -218,9 +218,6 @@ plot(pca$x[,1], pca$x[,2], xlab="PC1", ylab="PC2", xlim=c(-270,500))
 text(pca$x[,1], pca$x[,2], colnames(x),col=mycols_pca)
 
 ```
-
-vnskdfjbn
-
 
 
 ## PCA "Loadings"

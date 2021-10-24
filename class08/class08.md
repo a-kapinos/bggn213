@@ -28,16 +28,16 @@ km
     ## 
     ## Cluster means:
     ##           x         y
-    ## 1 -3.102857  3.015015
-    ## 2  3.015015 -3.102857
+    ## 1 -3.235171  3.009271
+    ## 2  3.009271 -3.235171
     ## 
     ## Clustering vector:
     ##  [1] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 1
     ## [39] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
     ## 
     ## Within cluster sum of squares by cluster:
-    ## [1] 60.2203 60.2203
-    ##  (between_SS / total_SS =  90.3 %)
+    ## [1] 60.63512 60.63512
+    ##  (between_SS / total_SS =  90.6 %)
     ## 
     ## Available components:
     ## 
@@ -71,8 +71,8 @@ km$centers
 ```
 
     ##           x         y
-    ## 1 -3.102857  3.015015
-    ## 2  3.015015 -3.102857
+    ## 1 -3.235171  3.009271
+    ## 2  3.009271 -3.235171
 
 > Q. Plot x colored by the kmeans cluster assignment and add cluster
 > centers as blue points.
@@ -395,8 +395,6 @@ text(pca$x[,1], pca$x[,2], colnames(x),col=mycols_pca)
 ```
 
 ![](class08_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
-
-vnskdfjbn
 
 ## PCA “Loadings”
 
