@@ -85,11 +85,13 @@ plot(data, col=grps)
 In sum, `kmeans()` requires that we specify the data and number of centers, while `hclust()` requires that we specify the distance/dissimilarity structure of the data.
 
 
-# Principal Component Analysis (PCA)
+## Principal Component Analysis (PCA)
 
 PCA is a useful analysis method when you have lots of dimensions in your data...
 
-## PCA of UK food data
+# PCA of UK food data
+
+# Data Import and Checking Data
 
 First going to import the data from the csv file
 
@@ -98,7 +100,9 @@ url <- "https://tinyurl.com/UK-foods"
 x <- read.csv(url)
 ```
 
->Q. Complete the following code to find out how many rows and columns are in x?
+>Q1. How many rows and columns are in your new data frame named x? What R functions could you use to answer this questions?
+
+Complete the following code to find out how many rows and columns are in x?
 ___(x)
 
 ```{r}
@@ -127,11 +131,19 @@ head(x)
 dim(x)
 ```
 
-Much better!
+Much better! Let's check again to see how many rows and columns there are now.
+
+```{r}
+dim(x)
+```
+
+Great; there are 17 rows and 4 columns.
 
 >Q2. Which approach to solving the ‘row-names problem’ mentioned above do you prefer and why? Is one approach more robust than another under certain circumstances?
 
 The first approach (ie. using x <- x[,-1]) will remove data each time it is run (ie. if run again, the England column would disappear and the row names would become the values from that deleted column). We should instead just reload the data using an argument in the read.csv() function, which loads the data in as we'd like without having to manipulate the data further.
+
+# Spotting Major Differences and Trends
 
 Let's plot the data
 
@@ -141,7 +153,7 @@ barplot(as.matrix(x), beside=T, col=rainbow(nrow(x)))
 
 >Q3. Changing what optional argument in the above barplot() function results in the following plot?
 
-If we remove the beside=T argument, then the bars will not be plotted besides one another. See below.
+If we remove the beside=TRUE argument, then the bars will not be plotted besides one another. See below.
 
 ```{r}
 barplot(as.matrix(x),col=rainbow(nrow(x)))
@@ -162,9 +174,9 @@ If the values for each country are the same, the respective point for that value
 
 >Q6. What is the main differences between N. Ireland and the other countries of the UK in terms of this data-set?
 
-Ask: as in which values are different for N. Ireland? Or just that N. Ireland is the most unique (ie. had the most values that deviate significantly/exhibit values that do not fall along the diagonal)
+N. Ireland seems to be the most unique, given that it participates in the most plots which exhibit values that do not fall along the diagonal (ie. has the most values that deviate significantly from the other countries). 
 
-## PCA to the rescue
+# PCA to the rescue
 
 Here we will use the base R function for PCA, which is called `prcomp()`. We'll need to transpose the data using `t()` so that the prcomp() function is analyzing the proper data.
 
@@ -200,7 +212,12 @@ text(pca$x[,1], pca$x[,2], colnames(x))
 
 >Q8. Customize your plot so that the colors of the country names match the colors in our UK and Ireland map and table at start of this document.
 
+```{r}
+mycols_pca <- c("orange","red","blue","green4")
+plot(pca$x[,1], pca$x[,2], xlab="PC1", ylab="PC2", xlim=c(-270,500))
+text(pca$x[,1], pca$x[,2], colnames(x),col=mycols_pca)
 
+```
 
 vnskdfjbn
 
@@ -212,12 +229,19 @@ We can also examine the PCA "loadings", which tell us how much the original vari
 
 ```{r}
 pca$rotation
-par(mar=c(10,3,0.35,0))
-barplot(pca$rotation[,1],las=2)
+par(mar=c(10,3,2,0))
+barplot(pca$rotation[,1],las=2,main="PC1 Loadings")
 ```
 
-Along PC1 we can go in the positive or negative direction. Comparing this plot to the 
+Along PC1 we can go in the positive or negative direction. Comparing this plot to the plot of PC1 v. PC2, we can observe how some observations can "push" countries to one side or the other, depending on their loadings. Eg. high negative scores, like Fresh_fruit and Alcoholic_drinks, push Wales, England, and Scotland to the left side of the plot. High positive scores, like Fresh_potatoes and Soft_drinks, push N. Ireland to the right side of the plot.
 
+>Q9. Generate a similar ‘loadings plot’ for PC2. What two food groups feature prominantely and what does PC2 mainly tell us about?
+
+```{r}
+par(mar=c(10,3,2,0))
+barplot(pca$rotation[,2],las=2,main="PC2 Loadings")
+```
+Fresh_potatoes and Soft_drinks feature prominently in this plot. The loading plot for PC2 tells us which groups contribute most heavily towards the remaining variance that is observed in the sample, after accounting for PC1.
 
 ## One more PCA for today
 
@@ -236,6 +260,8 @@ nrow(rna.data)
 ncol(rna.data)
 colnames(rna.data)
 ```
+
+100 genes and 10 samples.
 
 Let's run PCA!
 
@@ -275,7 +301,7 @@ barplot(pca.var.per, main="Scree Plot",
         xlab="Principal Component", ylab="Percent Variation")
 ```
 
-We can make this a bit more useful and attractive by updating the script
+We can make our PCA plot a bit more useful and attractive by updating the script
 ```{r}
 ## A vector of colors for wt and ko samples
 colvec <- colnames(rna.data)
@@ -288,9 +314,4 @@ plot(pca.rna$x[,1], pca.rna$x[,2], col=colvec, pch=16,
 
 text(pca.rna$x[,1], pca.rna$x[,2], labels = colnames(rna.data), pos=c(rep(4,5), rep(2,5)))
 ```
-
-
-
-
-
 
