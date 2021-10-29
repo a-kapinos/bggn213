@@ -7,121 +7,159 @@ output: pdf_document
 
 ## Getting organized, Preparing the Data
 
+Before we begin our analyses, we'll need to download and import the WisconsinCancer.csv data file using read.csv() and assign the data to an object called "wisc.df".
+
+We can take a look at the data by using head().
+
 ```{r}
 fna.data <- "WisconsinCancer.csv"
 wisc.df <- read.csv(fna.data, row.names=1)
 head(wisc.df)
 ```
 
+The first column in the data frame contains a pathologist-provided diagnosis, which is basically the "answer" to the questions we'll be asking today. 
+
+Let's create a data frame that we may work with that omits the column, then save the diagnosis information to a separate vector that we can use to check our results later on.
+
 ```{r}
 wisc.data <- wisc.df[,-1]
 diagnosis <- as.factor(wisc.df[,1])
 ```
 
+Time to further familiarize ourselves with the data.
+
 The functions dim(), nrow(), table(), length() and grep() may be useful for answering the first 3 questions.
 
->Q1. How many observations are in this dataset?
+>**Q1. How many observations are in this dataset?**
 
 ```{r}
 nrow(wisc.data)
 ```
 
-**There are 569 observations in the dataset.**
+**\textcolor{blue}{There are 569 observations in the dataset.}**
 
->Q2. How many of the observations have a malignant diagnosis?
+>**Q2. How many of the observations have a malignant diagnosis?**
 
 ```{r}
 table(diagnosis)
 ```
-**212 of the observations have a malignant diagnosis.**
+**\textcolor{blue}{212 of the observations have a malignant diagnosis.}**
 
->Q3. How many variables/features in the data are suffixed with _mean?
+>**Q3. How many variables/features in the data are suffixed with \_mean?**
 
 ```{r}
 length(grep("_mean",colnames(wisc.data)))
 ```
 
-**There are 10 variables/features in the data suffixed with "_mean". **
+**\textcolor{blue}{There are 10 variables/features in the data suffixed with "\_mean".}**
 
 ## Performing PCA
 
-Check column means and standard deviations
+The next step in our data analysis is to perform a PCA on wisc.data.
 
+First, we'll check the column means and standard deviations to see if the data needs to be scaled, using colMeans() and apply().
 
 ```{r}
 colMeans(wisc.data)
 apply(wisc.data,2,sd)
+```
+
+Since the input variables have quite different means, we'll want to scale the data using scale=TRUE argument in the prcomp() function.
+
+Let's run the PCA and inspect the results using summary().
+
+```{r}
 wisc.pr <- prcomp(wisc.data,scale=TRUE)
 summary(wisc.pr)
 ```
 
->Q4. From your results, what proportion of the original variance is captured by the first principal components (PC1)?
+>**Q4. From your results, what proportion of the original variance is captured by the first principal components (PC1)?**
 
 ```{r}
 summary(wisc.pr)$importance[2,]
 ```
 
-**44.27% of the original variance is captured by the first principal component (PC1).**
+**\textcolor{blue}{44.272\% of the original variance is captured by the first principal component (PC1).}**
 
->Q5. How many principal components (PCs) are required to describe at least 70% of the original variance in the data?
+>**Q5. How many principal components (PCs) are required to describe at least 70% of the original variance in the data?**
 
 ```{r}
 summary(wisc.pr)$importance[3,]
 ```
 
-**Three PCs are required to describe at least 70% of the original variance in the data (PC1, PC2, and PC3 together describe 72.636% of the original variance).**
+**\textcolor{blue}{Three PCs are required to describe at least 70\% of the original variance in the data (PC1, PC2, and PC3 together describe 72.636\% of the original variance).}**
 
-Q6. How many principal components (PCs) are required to describe at least 90% of the original variance in the data?
+>**Q6. How many principal components (PCs) are required to describe at least 90% of the original variance in the data?**
 
-**From above, seven PCs are required to describe at least 90% of the original variance in the data (PC1 through PC7 describe 91.01% of the original variance).**
+**\textcolor{blue}{From above, seven PCs are required to describe at least 90\% of the original variance in the data (PC1 through PC7 describe 91.010\% of the original variance).}**
 
-## Interpreting PCS results
+## Interpreting PCA results
+
+We'll now use data visualizations to better understand our PCA results. We'll start by using a "biplot" and the biplot() function, but this may lead to some problems if we have a non-trivial number of observations and variables. Let's give it a shot.
 
 ```{r}
 biplot(wisc.pr)
 ```
 
->Q7. What stands out to you about this plot? Is it easy or difficult to understand? Why?
+>**Q7. What stands out to you about this plot? Is it easy or difficult to understand? Why?**
 
-**The plot is not informative because it is extremely crowded. This is not useful for interpreting the PCA results.**
+**\textcolor{blue}{The plot is not informative because it is extremely crowded. This is not useful for interpreting the PCA results.}**
 
-Scatter plot observations by components 1 and 2
+Inclusion of rownames can make interpretation of the biplot rather difficult. Let's instead try to analyze a scatter plot of our observations along principal components 1 and 2, using wisc.pr$x and the plot() function.
+
+**Scatter plot of obs. by PC1 and PC2**
+
 ```{r}
 plot(wisc.pr$x[,1:2],col=diagnosis,xlab="PC1",ylab="PC2")
 ```
 
->Q8. Generate a similar plot for principal components 1 and 3. What do you notice about these plots?
+>**Q8. Generate a similar plot for principal components 1 and 3. What do you notice about these plots?**
 
-Scatter plot observations by components 1 and 3
+**Scatter plot of obs. by PC1 and PC3**
 ```{r}
 plot(wisc.pr$x[,1],wisc.pr$x[,3],col=diagnosis,xlab="PC1",ylab="PC2")
 ```
 
-**The graphs look somewhat similar; since PC1 accounts for most of the variance in both comparisons, the majority of the distribution of the points is along the x axis. Both plots display that PC1 captures the separation between malignant and benign samples (red v. black). However, PC2 does describe a bit more variance than PC3, so the first plot (PC2 v. PC1) has a bit more spread between the points than the second plot (PC3 v. PC1).**
+**\textcolor{blue}{The graphs look somewhat similar; since PC1 accounts for most of the variance in both comparisons, the majority of the distribution of the points is along the x axis. Both plots demonstrate that PC1 captures the separation between malignant and benign samples (red v. black).}**
+
+**\textcolor{blue}{Moreover, PC2 describes a bit more variance than PC3, so the first plot (PC2 v. PC1) thus has a bit more spread between the points than the second plot (PC3 v. PC1).}**
 
 ## Using ggplot2 for analysis of PCA
 
+That visualization was much more striking than the biplot, so let's try using ggplot2 to make a fancier figure. 
+
+We'll need to store our PC1 and PC2 data as a data frame, as well as add our diagnosis vector as a column to be used for the color aesthetic.
+
 ```{r}
-# Create a data.frame for ggplot
+# Create a data frame for ggplot
 df <- as.data.frame(wisc.pr$x)
 df$diagnosis <- diagnosis
 
 # Load the ggplot2 package
 library(ggplot2)
 
-# Make a scatter plot colored by diagnosis
+# Make a scatter plot, colored by diagnosis
 ggplot(df) + 
   aes(PC1, PC2, col=diagnosis) + 
   geom_point()
 ```
 
+Nice!
+
 ## Variance explained (using scree plots)
 
-Calculate variance of each component
+Next, we'll produce scree plots to display the proportion of variance explained as the number of principal components increases.
+
+To do this, we'll need to first calculate the variance of each component by squaring the sdev component of wisc.pr.
+
 ```{r}
 pr.var <- wisc.pr$sdev^2
 head(pr.var)
 ```
+
+Next, we'll calculate the variance explained by each principal component by dividing the variance each component by the total variance (ie. sum of each component's variance).
+
+We can then plot this using plot().
 
 ```{r}
 pve <- pr.var/sum(pr.var)
@@ -130,12 +168,17 @@ plot(pve, xlab = "Principal Component",
      ylim = c(0, 1),type = "o")
 ```
 
-Alternative scree plot of the same data, note data driven y-axis
+It looks like the 'elbow' of the curve happens at around 3-4 PCs. After 3 or 4 PCs, the use of additional PCs does little to improve the total amount of original variance explained.
+
+We can make an alternative scree plot of the same data using barplot(). Note the data driven y-axis!
+
 ```{r}
 barplot(pve,ylab="Precent of Variance Explained",
      names.arg=paste0("PC",1:length(pve)),las=2,axes=FALSE)
 axis(2,at=pve,labels=round(pve,2)*100)
 ```
+
+**Optional:** There are quite a few CRAN packages that are helpful for PCA, including the factoextra package.
 
 ```{r}
 library(factoextra)
@@ -144,121 +187,168 @@ fviz_eig(wisc.pr, addlabels = TRUE)
 
 ## Communicating PCA results
 
->Q9. For the first principal component, what is the component of the loading vector (i.e. wisc.pr$rotation[,1]) for the feature concave.points_mean?
+Let's check our understanding of the PCA results, in particular the loadings and variance explained.
+
+Loadings, represented as vectors, explain the mapping from the original features onto the principal components. Principal components are automatically ordered from the most to least variance explained.
+
+>**Q9. For the first principal component, what is the component of the loading vector (i.e. wisc.pr$rotation[,1]) for the feature concave.points_mean?**
 
 ```{r}
 wisc.pr$rotation[,1]
 ```
-**The component of the loading vector for concave.points_mean is -0.26085376.**
+**\textcolor{blue}{The component of the loading vector for concave.points\_mean is -0.26085376. This is the feature with the highest absolute value, which means it contributes the most to the first principal component.}**
 
->Q10. What is the minimum number of principal components required to explain 80% of the variance of the data?
+>**Q10. What is the minimum number of principal components required to explain 80% of the variance of the data?**
 
 ```{r}
 summary(wisc.pr)$importance[3,]
 ```
 
-**From above, five PCs are required to describe at least 80% of the original variance in the data (PC1 through PC5 describe 84.734% of the original variance).**
+**\textcolor{blue}{From above, five PCs are required to describe at least 80\% of the original variance in the data (PC1 through PC5 describe 84.734\% of the original variance).}**
 
 ## Hierarchical clustering
 
-Scale the wisc.data data using the "scale()" function
+The goal of this section is to perform hierarchical clustering of the original data. This type of clustering does not assume in advance the number of natural groups that exist in the data.
+
+To perform hierarchical clustering, we'll need to scale wisc.data, then calculate the distances between all pairs of observations. Thereafter, we can perform hierarchical clustering using Hclust.
+
+(1) Scale the wisc.data data using the scale() function
 ```{r}
 data.scaled <- scale(wisc.data)
 ```
 
+(2) Calculate the Euclidean distances between all pairs of observations using the dist() function.
 ```{r}
 data.dist <- dist(data.scaled)
 ```
 
+(3) Create a hierarchical clustering model using complete linkage; ie. using hclust() and the argument method="complete".
 ```{r}
 wisc.hclust <- hclust(data.dist, method="complete")
 ```
 
->Q11. Using the plot() and abline() functions, what is the height at which the clustering model has 4 clusters?
+We'll now use our new model to determine a height (or distance between clusters) where a certain number of clusters exists.
+
+>**Q11. Using the plot() and abline() functions, what is the height at which the clustering model has 4 clusters?**
 
 ```{r}
-plot(wisc.hclust)
+plot(wisc.hclust,cex=0.1)
 abline(h=20, col="red", lty=2)
 abline(h=19, col="blue", lty=2)
 ```
 
-**Either h=19 (blue) or h=20 (red) are heights at which the clustering model has 4 clusters.**
+**\textcolor{blue}{Either h=19 (blue) or h=20 (red) are heights at which the clustering model has 4 clusters.}**
 
 # Selecting number of clusters
+
+In this section, we'll compar the outputs from our Hclust model to the actual diagnoses. This exercise will help us to determine if, in this case, hierarchical clustering provides a promising new feature.
+
+We will use cutree() to cut the tree so that it has 4 clusters. We'll also use the table() function to compare the cluster membership to the actual diagnoses.
 
 ```{r}
 wisc.hclust.clusters <- cutree(wisc.hclust,h=19)
 table(wisc.hclust.clusters,diagnosis)
 ```
 
->Q12. Can you find a better cluster vs diagnoses match by cutting into a different number of clusters between 2 and 10?
+Using 4 clusters, we can see that cluster 1 largely corresponds to malignant cells (note: M obs. have diagnosis values of 1), while cluster 3 largely corresponds to benign cells (note: B obs. have diagnosis values of 0).
+
+Let's explore how different numbers of clusters can affect the ability of hierarchical clustring to separate out the different diagnoses.
+
+>**Q12. Can you find a better cluster vs diagnoses match by cutting into a different number of clusters between 2 and 10?**
 
 ```{r}
-wisc.hclust.clusters.2 <- cutree(wisc.hclust,h=25)
-table(wisc.hclust.clusters.2,diagnosis)
 wisc.hclust.clusters.3 <- cutree(wisc.hclust,h=22)
 table(wisc.hclust.clusters.3,diagnosis)
 wisc.hclust.clusters.5 <- cutree(wisc.hclust,h=18)
 table(wisc.hclust.clusters.5,diagnosis)
 wisc.hclust.clusters.7 <- cutree(wisc.hclust,h=16)
 table(wisc.hclust.clusters.7,diagnosis)
-wisc.hclust.clusters.9 <- cutree(wisc.hclust,h=13)
+wisc.hclust.clusters.9 <- cutree(wisc.hclust,h=14)
 table(wisc.hclust.clusters.9,diagnosis)
 ```
 
-**Yes; at h=18, using 5 clusters. When using 4 clusters, 1/4 clusters contain only B *or* M, while when using 5 clusters, 3/5 clusters contain only B *or* M.**
+**\textcolor{blue}{Not really; when using 4 clusters, 1/4 clusters contain only B *or* M, and when using, for example, 9 clusters, now 7/9 clusters contain only B *or* M. This appears to be a better separation at first glance, but the additional clusters containing only B *or* M seem to be made up of clusters which originally only contained B or M in the first place. This does little to actually separate out the B vs. M diagnoses.}**
 
-**The number of observations in the mixed B *and* M clusters remains approximately the same when using 5 vs. 4 clusters. Adding any more clusters actually introduces additional mixed clusters, and does not improve the separation between B and M observations.**
+**\textcolor{blue}{When using 4 and 9 clusters, the number of observations belonging to mixed clusters (ie. containing both B *and* M) is 560 and 468, respectively. This is a slight improvement in the separation of B and M observations, but perhaps not worth having to interpret/track additional clusters containing only 1, 2, or 3 observations. If the dataset was expected to expand greatly over time, then these additional clusters may expand and be worthy of inclusion, but if not then I would stick with the 4 clusters for the sake of simplicity.}**
 
->Q13. Which method gives your favorite results for the same data.dist dataset? Explain your reasoning.
+# Using different methods
+
+There are other methods which we can use to combine points during hierarchical clustering. These include "single", "complete", "average", and "ward.D2".
+
+>**Q13. Which method gives your favorite results for the same data.dist dataset? Explain your reasoning.**
 
 ```{r}
-plot(hclust(data.dist,method="single"))
-plot(hclust(data.dist,method="complete"))
-plot(hclust(data.dist,method="average"))
-plot(hclust(data.dist,method="ward.D2"))
+plot(hclust(data.dist,method="single"),cex=0.1)
+plot(hclust(data.dist,method="complete"),cex=0.1)
+plot(hclust(data.dist,method="average"),cex=0.1)
+plot(hclust(data.dist,method="ward.D2"),cex=0.1)
 ```
 
-**I personally prefer the "ward.D2" method, because the terminal nodes of the dendrogram are aligned at the bottom of the graphic (this feels familiar to my prior experience viewing and interpreting dendrograms). The root/early branching of the tree is spread out as well, which would make selecting the cutree() height easier visually speaking.**
+**\textcolor{blue}{I personally prefer the "ward.D2" method, because the terminal nodes of the dendrogram are aligned at the bottom of the graphic (this feels familiar given my prior experience viewing and interpreting dendrograms). The root/early branching of the tree is spread out as well, which would make selecting the cutree() height easier, at least visually speaking.}**
+
+Side-note from lab handout: The method="ward.D2" creates groups such that variance is minimized within clusters. This has the effect of looking for spherical clusters with the process starting with all points in individual clusters (bottom up) and then repeatedly merging a pair of clusters such that when merged there is a minimum increase in total within-cluster variance This process continues until a single group including all points (the top of the tree) is defined.
 
 ## K-means clustering
 
+We can also create a k-means clustering model based on our dataset and compare our new results to the actual diagnoses (and the Hclust model's results).
+
+We'll create a k-means model on wisc.data, assigning the result to wisc.km, using k=2 and 20 starts. We'll also want to scale the data as before.
+
+After creating our model, we will use the table() function to compare the cluster membership of the k-means model to the actual diagnoses contained in the diagnosis vector.
+
 ```{r}
-wisc.km <- kmeans(wisc.data, centers=2, nstart=20)
+data.scaled <- scale(wisc.data)
+wisc.km <- kmeans(data.scaled, centers=2, nstart=20)
 table(wisc.km$cluster,diagnosis)
-wisc.hclust.clusters.5 <- cutree(wisc.hclust,h=18)
-table(wisc.hclust.clusters.5,diagnosis)
+wisc.hclust <- hclust(data.dist, method="complete")
+wisc.hclust.clusters.4 <- cutree(wisc.hclust,h=19)
+table(wisc.hclust.clusters.4,diagnosis)
+wisc.hclust.clusters.2 <- cutree(wisc.hclust,h=24)
+table(wisc.hclust.clusters.2,diagnosis)
 ```
 
->Q14. How well does k-means separate the two diagnoses? How does it compare to your hclust results?
+>**Q14. How well does k-means separate the two diagnoses? How does it compare to your hclust results?**
 
-**K-means separates the clusters relatively well; cluster 2 contains mostly M (129/130 obs.), while cluster 1 is slightly less well separated. Compared to hclust, using 5 clusters, the reverse effect is seen. Hclust seems to have better separated out B observations (the predominantly "B" cluster contains half as many "M"s when compared to the K-means method). Overall, niether approach is perfect, but both provide a nice, quick approximation.**
+**\textcolor{blue}{K-means separates the clusters relatively well; cluster 1 contains mostly M (175/189 obs.) and cluster 2 contains mostly B (343/380 obs.). This seems to be a slightly better approach than hclust, which used 4 clusters to acheive approximately the same separation of groups. When using only 2 clusters, Hclust has a very poor separation between B and M, while k-means does a much better job.}**
 
+**\textcolor{blue}{Overall, niether approach is perfect, but both provide a nice, quick approximation.}**
+
+Let's use the table function to compare the cluster membership of the k-means model to the Hclust model from above.
+
+```{r}
+table(wisc.hclust.clusters,wisc.km$cluster)
+```
+
+We can see that clusters 1, 2, and 4 from the Hclust model generally correspond with cluster 1 from the k-means model. Cluster 3 from the Hclust model generally corresponds with cluster 2 from the k-means model.
 
 ## Combining methods, clustering on PCA results
 
+In this final section, we'll put together several steps from earlier.
+
+Let's see first if PCA improves or degrades the performance of hierarchical clustersing. Using the minimum number of PCs required to describe at least 90% of the data (PC1 through PC7), we'll create a hierarchical clustering model with linkage method="ward.D2". We'll assign the results to wisc.pr.hclust.
+
 ```{r}
-wisc.pr.dist.17 <- dist(wisc.pr$x[,1:7])
-wisc.pr.hclust <- hclust(wisc.pr.dist.17,method="ward.D2")
-plot(wisc.pr.hclust)
+wisc.pr.hclust <- hclust(dist(wisc.pr$x[,1:7]),method="ward.D2")
+plot(wisc.pr.hclust,cex=0.1)
 ```
+
+This looks promising! There appears to be two main branches (ie. clusters), which may correspond with M and B observations. Let's see if this is the case using cutree() and table(), then plot the results using plot().
 
 ```{r}
 grps <- cutree(wisc.pr.hclust,k=2)
 table(grps)
-```
-
-```{r}
 table(grps,diagnosis)
-```
-
-```{r}
 plot(wisc.pr$x[,1:2],col=grps)
 ```
+
+Let's compare the groupings predicted by Hclust to the actual diagnoses, by setting the color mapping argument to the diagnosis vector.
 
 ```{r}
 plot(wisc.pr$x[,1:2],col=diagnosis)
 ```
+
+**Optional from lab handout:** Note the color swap here as the hclust cluster 1 is mostly “M” and cluster 2 is mostly “B” as we saw from the results of calling table(grps, diagnosis). To match things up we can turn our groups into a factor and reorder the levels so cluster 2 comes first and thus gets the first color (black) and cluster 1 gets the second color (red).
+
 ```{r}
 g <- as.factor(grps)
 levels(g)
@@ -268,8 +358,105 @@ plot(wisc.pr$x[,1:2], col=g)
 ```
 
 ```{r}
-#library(rgl)
-#plot3d(wisc.pr$x[,1:3], xlab="PC 1", ylab="PC 2", zlab="PC 3", cex=1.5, size=1, type="s", col=grps)
-#rglwidget(width = 400, height = 400)
+# Optional 3D render of results
+# library(rgl)
+# plot3d(wisc.pr$x[,1:3], xlab="PC 1", ylab="PC 2", zlab="PC 3", cex=1.5, size=1, type="s", col=grps)
+# rglwidget(width = 400, height = 400)
 ```
 
+This seems to be a fairly good predictor of the actual diagnoses when looking at the plots alone; let's use table() to specifically compare the results from our new Hclust model to the actual diagnosis vector, though, just to be sure.
+
+```{r}
+wisc.pr.hclust <- hclust(dist(wisc.pr$x[,1:7]),method="ward.D2")
+wisc.pr.hclust.clusters <- cutree(wisc.pr.hclust,k=2)
+table(wisc.pr.hclust.clusters,diagnosis)
+```
+
+>**Q15. How well does the newly created model with four clusters separate out the two diagnoses?**
+
+**\textcolor{blue}{This new Hclust model separates out the two diagnoses fairly well (definitely better than the original Hclust model using 2 clusters and based on the scaled data alone).}**
+
+>**Q16. How well do the k-means and hierarchical clustering models you created in previous sections (i.e. before PCA) do in terms of separating the diagnoses? Again, use the table() function to compare the output of each model (wisc.km$cluster and wisc.hclust.clusters) with the vector containing the actual diagnoses.**
+
+```{r}
+table(wisc.km$cluster,diagnosis)
+table(wisc.hclust.clusters,diagnosis)
+```
+**\textcolor{blue}{Both models appear to perform about as well as each other, as well as when compared to the new Hclust model based on PCA data.}**
+
+# Sensitivity and specificity
+
+**From lab handout:**
+
+>Sensitivity refers to a test’s ability to correctly detect ill patients who do have the condition. In our example here the sensitivity is the total number of samples in the cluster identified as predominantly malignant (cancerous) divided by the total number of known malignant samples. In other words: TP/(TP+FN).
+
+>Specificity relates to a test’s ability to correctly reject healthy patients without a condition. In our example specificity is the proportion of benign (not cancerous) samples in the cluster identified as predominantly benign that are known to be benign. In other words: TN/(TN+FN).
+
+>**Q17. Which of your analysis procedures resulted in a clustering model with the best specificity? How about sensitivity?**
+
+Let's display each model's results alongside the diagnosis data once again to determine specificity and sensitivity.
+
+>Sensitivity = TP/(TP+FN)
+
+>Specificity = TN/(TN+FN)
+
+**Hclust (scaled data alone)**
+```{r}
+table(wisc.hclust.clusters,diagnosis)
+```
+Malignant clusters: 1, 2, 4
+
+Benign clusters: 3
+
+>Sensitivity = (165+5+2)/(165+5+2+40) = 81.13%
+
+>Specificity = (343)/(343+40) = 89.56%
+
+**Hclust (PCA data)**
+```{r}
+table(wisc.pr.hclust.clusters,diagnosis)
+```
+Malignant clusters: 1
+
+Benign clusters: 2
+
+>Sensitivity = (188)/(188+24) = 88.68%
+
+>Specificity = (329)/(329+24) = 93.20%
+
+**K-means**
+```{r}
+table(wisc.km$cluster,diagnosis)
+```
+Malignant clusters: 1
+
+Benign clusters: 2
+
+>Sensitivity = (175)/(175+37) = 82.55%
+
+>Specificity = (343)/(343+37) = 90.26%
+
+**\textcolor{blue}{The Hclust model using PCA data from PC1 through PC7 (describing at least 90\% variance) has both the best specificity and sensitivity, with a specificity of 93.20\% and a sensitivity of 88.68\%.}**
+
+# Prediction
+
+We will use the predict() function, which takes our PCA model of the Wisconsin cancer data and projects new cancer cell data onto our PCA space.
+
+```{r}
+url <- "https://tinyurl.com/new-samples-CSV"
+new <- read.csv(url)
+npc <- predict(wisc.pr, newdata=new)
+npc
+```
+
+Let's plot the new data points onto our older PCA space using plot(), points(), and text().
+
+```{r}
+plot(wisc.pr$x[,1:2], col=g)
+points(npc[,1], npc[,2], col="blue", pch=16, cex=3)
+text(npc[,1], npc[,2], c(1,2), col="white")
+```
+
+>**Q18. Which of these new patients should we prioritize for follow up based on your results?**
+
+**\textcolor{blue}{Given that malignant observations are plotted in red, I would prioritize patient 2 for follow up. This patient's data maps them solidly amongst malignant observations, while patient 1's data places them amongst mostly benign (black) points.}** 
