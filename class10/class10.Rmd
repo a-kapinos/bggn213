@@ -2,7 +2,9 @@
 title: "Class 10: Halloween Mini-Project"
 author: "Andrew Kapinos"
 date: "10/29/2021"
-output: html_document
+output: 
+  pdf_document:
+    latex_engine: xelatex
 ---
 ## 1. Importing Candy Data
 
@@ -266,8 +268,8 @@ p + geom_text_repel(size=3.3, col=my_cols, max.overlaps = 7)  +
 We can use plotly to create an interactive plot that we can mouse over to view labels.
 
 ```{r}
-library(plotly)
-ggplotly(p)
+# library(plotly)
+# ggplotly(p)
 ```
 
 Finally, let's take a look at the PC loadings.
