@@ -1,5 +1,5 @@
 ---
-title: "class09"
+title: "class09 Mini Lab Project"
 author: "Andrew Kapinos"
 date: "10/27/2021"
 output: pdf_document
