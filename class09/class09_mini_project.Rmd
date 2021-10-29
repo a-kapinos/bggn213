@@ -398,45 +398,51 @@ Let's display each model's results alongside the diagnosis data once again to de
 
 >Sensitivity = TP/(TP+FN)
 
->Specificity = TN/(TN+FN)
+>Specificity = TN/(TN+FP)
 
 **Hclust (scaled data alone)**
 ```{r}
 table(wisc.hclust.clusters,diagnosis)
+Hclust.scaled.accuracy <- (165+5+343+2)/nrow(wisc.data)
+Hclust.scaled.sensitivity <- (165+5+2)/(165+5+2+40)
+Hclust.scaled.specificity <- (343)/(343+12+2)
+paste("Hclust scaled accuracy is", Hclust.scaled.accuracy)
+paste("Hclust scaled sensitivity is", Hclust.scaled.sensitivity)
+paste("Hclust scaled specificity is", Hclust.scaled.specificity)
 ```
 Malignant clusters: 1, 2, 4
 
 Benign clusters: 3
 
->Sensitivity = (165+5+2)/(165+5+2+40) = 81.13%
-
->Specificity = (343)/(343+40) = 89.56%
-
 **Hclust (PCA data)**
 ```{r}
 table(wisc.pr.hclust.clusters,diagnosis)
+Hclust.pr.accuracy <- (188+329)/nrow(wisc.data)
+Hclust.pr.sensitivity <- (188)/(188+24)
+Hclust.pr.specificity <- (329)/(329+28)
+paste("Hclust PCA accuracy is", Hclust.pr.accuracy)
+paste("Hclust PCA sensitivity is", Hclust.pr.sensitivity)
+paste("Hclust PCA specificity is", Hclust.pr.specificity)
 ```
 Malignant clusters: 1
 
 Benign clusters: 2
-
->Sensitivity = (188)/(188+24) = 88.68%
-
->Specificity = (329)/(329+24) = 93.20%
 
 **K-means**
 ```{r}
 table(wisc.km$cluster,diagnosis)
+kmeans.accuracy <- (175+343)/nrow(wisc.data)
+kmeans.sensitivity <- (175)/(175+37)
+kmeans.specificity <- (343)/(343+14)
+paste("Kmeans accuracy is", kmeans.accuracy)
+paste("Kmeans sensitivity is", kmeans.sensitivity)
+paste("Kmeans specificity is", kmeans.specificity)
 ```
 Malignant clusters: 1
 
 Benign clusters: 2
 
->Sensitivity = (175)/(175+37) = 82.55%
-
->Specificity = (343)/(343+37) = 90.26%
-
-**\textcolor{blue}{The Hclust model using PCA data from PC1 through PC7 (describing at least 90\% variance) has both the best specificity and sensitivity, with a specificity of 93.20\% and a sensitivity of 88.68\%.}**
+**\textcolor{blue}{The k-means model has the highest accuracy, with an accuracy of 91.04\%. The Hclust model using scaled data and the k-means model have the best specificity, with a specifity of 96.08\%. The Hclust model using PCA data from PC1 through PC7 (describing at least 90\% variance) has the best sensitivity, with a sensitivity of 88.68\%.}**
 
 # Prediction
 
