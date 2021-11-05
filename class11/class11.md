@@ -133,9 +133,15 @@ pdb
 
 > Q7: How many amino acid residues are there in this pdb object?
 
+There are 129 amino acid residues.
+
 > Q8: Name one of the two non-protein residues?
 
+H0H, or water.
+
 > Q9: How many protein chains are in this structure?
+
+There is one protein chain (A).
 
 Let’s use nma() for Normal Mode Analysis (NMA) a prediction of the
 conformational variability and intrinsic dynamics of this protein.
@@ -144,8 +150,8 @@ conformational variability and intrinsic dynamics of this protein.
 m <- nma(pdb)
 ```
 
-    ##  Building Hessian...     Done in 0.043 seconds.
-    ##  Diagonalizing Hessian...    Done in 0.248 seconds.
+    ##  Building Hessian...     Done in 0.021 seconds.
+    ##  Diagonalizing Hessian...    Done in 0.103 seconds.
 
 ``` r
 plot(m)
