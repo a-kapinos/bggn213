@@ -1,8 +1,10 @@
 ---
 title: "Class 12: Structural Bioinformatics II"
+author: "Andrew Kapinos"
+date: "11-05-21"
 output: github_document
 ---
-# Working with bio3D
+## Working with bio3D
  
  Today we're continuing our work from class 11. Let's start by reviewing some basic functions used in the bio3d package for structural bioinformatics.
  
@@ -43,3 +45,93 @@ mktrj(modes,file="nma.pdb")
  
  ![](alltrajectories.png)
  
+## Comparative Structure Analysis
+ 
+ We will now get a sequence, search PDB for the structure, and get homologs (some will be close, others not so much).
+ 
+ We can put all of the sequences together to see what we can learn from them, eg. what is similar and what is different in the structures, and what that may mean for function. We can also perform PCA on the data to further analyze how the dataset is similar/different.
+ 
+ Let's start by obtaining our sequence.
+ 
+```{r}
+aa <- get.seq("1AKE_A")
+aa
+```
+ 
+ We want to search the PDB database (the main database for experimental structures) to identify sequences like ours; we can do so using blast.pdb() which uses BLASTp and the PDB dataset.
+ 
+```{r}
+# blast <- blast.pdb(aa)
+hits <- NULL
+hits$pdb.id <- c('1AKE_A','4X8M_A','6S36_A','6RZE_A','4X8H_A','3HPR_A','1E4V_A','5EJE_A','1E4Y_A','3X2S_A','6HAP_A','6HAM_A','4K46_A','4NP6_A','3GMT_A','4PZL_A')
+```
+ 
+ Let's take a look at the results of our BLAST search.
+ 
+```{r}
+# hits <- plot(blast)
+```
+ 
+ The top 16 hits are represented in black in the plot above. These are the structures in our database that have sequences which are the most similar to my query sequence. Note that the y-scale of the e-value plot is -log, which means that larger numbers are better (rather than the typical interpration of e-values, in whcich the lower the e-value, the better).
+ 
+ The top hit accesions can be found like so:
+ 
+```{r}
+hits$pdb.id
+```
+ 
+ Now, we'll download all of the related structures from PDB and store them locally.
+```{r}
+files <- get.pdb(hits$pdb.id,path="pdbs",split=TRUE,gzip=TRUE)
+# path = file name; in this case the file will be called "pdbs"
+# split = will split the pdbs by chain
+# gzip = compression method
+```
+ 
+ The next step is to put all of these structures in the same reference frame, ie. align them in order to superimpose/analyze structural (dis)similarities. This will be in the form of an MSA (multiple sequence alignment). The function we'll use for this is called "pdbaln()" ("PDB align").
+
+ We need to install MUSCLE first, though.
+
+```{r}
+library(bio3d)
+pdbs <- pdbaln(files,fit=TRUE)
+```
+
+Let's take a look at the output.
+
+```{r}
+pdbs
+```
+
+Let's take a look at what this data looks like when plotted. Red corresponds with aligned residues, white corresponds with gaps, grey represents the sequences themselves.
+
+```{r}
+ids <- basename.pdb(pdbs$id)
+plot(pdbs,labels=ids)
+```
+
+
+## Principal Component Analysis
+
+Let's do PCA on the xyz coordinate data of the structures, using the "pca()" function in bio3d.
+
+```{r}
+pc <- pca(pdbs)
+plot(pc)
+```
+
+In the above PC plots, each dot represents one PDB structure.
+
+We can visualize the displacements, ie. movement of the structure, that are captured by PC1. The pca.pdb file generated can be viewed in VMD.
+
+```{r}
+mktrj(pc, pc=1, file="pca.pdb")
+```
+
+If we'd like, we can save our important results.
+
+```{r}
+# save(hits,pc,file="class12results.RData")
+# load("class12results.RData")
+```
+
