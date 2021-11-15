@@ -69,4 +69,39 @@ hits.final
 
 ![](1BPX.png)
 
+## Function for Question 8
+
+```{r}
+consensus.aln.pdb <- function(fasta, x) {
+  # Load packages
+  library(bio3d)
+  library(dplyr)
+  # Load fasta file into R
+  fasta.file <- read.fasta(fasta)
+  # Generate consensus sequence
+  consensus.seq <- paste(consensus(fasta.file)$seq,collapse="")
+  # Write fasta file from consensus sequence
+  write.fasta(seqs=consensus.seq,file="consensusseq.fasta")
+  # Create object containing fasta data
+  consensusseq.fasta <- read.fasta("consensusseq.fasta")
+  # Perform BLAST of PDB using consensus sequence
+  consensus.blast.results <- blast.pdb(consensusseq.fasta)
+  # Identify top "x" hit IDs and convert to vector
+  top.hit.IDs <- head(consensus.blast.results$hit.tbl,x)[,2]
+  # Construct data frame containing pdb.annotate data for top hits
+  consensus.hits.data <- lapply(top.hit.IDs,pdb.annotate) %>% bind_rows()
+  # Filter data frame to include only ID, technique, resolution, and source
+  consensus.hits.data.filtered <- select(consensus.hits.data, c("structureId","experimentalTechnique","resolution","source"))
+  # Construct data frame containing e-value and identity values for top "x" hits
+  consensus.hits.EI <- select(head(consensus.blast.results$hit.tbl,x), c("evalue","identity"))
+  # Reassign row names in e-value/identity data frame
+  rownames(consensus.hits.EI) <- as.vector(select(head(consensus.blast.results$hit.tbl,x),"subjectids"))[1:x,]
+  # Combine data frames
+  consensus.hits.combined <- cbind(consensus.hits.data.filtered, consensus.hits.EI)
+  # Print result
+  consensus.hits.combined
+}
+
+consensus.aln.pdb("find-a-gene_alignment.fasta",10)
+```
 
