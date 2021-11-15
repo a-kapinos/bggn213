@@ -2,7 +2,7 @@
 title: "Find-a-gene Project Workspace"
 author: "Andrew Kapinos"
 date: "11/14/2021"
-output: html_document
+output: github_document
 ---
 
 ## Question 7
