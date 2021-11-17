@@ -1,0 +1,313 @@
+---
+title: "class15"
+author: "Andrew Kapinos"
+date: "11/17/2021"
+output: html_document
+---
+
+```{r}
+library(BiocManager)
+library(DESeq2)
+counts <- read.csv("airway_scaledcounts.csv", row.names=1)
+metadata <- read.csv("airway_metadata.csv")
+```
+
+```{r}
+head(counts)
+```
+
+```{r}
+head(metadata)
+```
+
+>Q1. How many genes are in this dataset?
+
+```{r}
+nrow(counts)
+```
+There are 38694 genes in the dataset.
+
+>Q2. How many ‘control’ cell lines do we have?
+
+```{r}
+sum(metadata$dex=="control")
+```
+There are 4 control cell lines.
+
+Let's check the correspondence of the metadata and count data setup. We will
+need to extract the 'id' column from metadata and the column names from count.
+We can then use "==" to check if they are the same. This will return a vector
+with TRUE or FALSE, depending on if each position in the two vectors is the
+same. By wrapping with "all()", then TRUE will only be returned if all positions
+in the vector are TRUE. If any are FALSE, then all() will return FALSE.
+
+```{r}
+all(metadata$id == colnames(counts))
+```
+
+Let's try to filter metadata by dex using dplyr.
+```{r}
+library(dplyr)
+metadata.control <- metadata %>% filter(dex=="control")
+metadata.treated <- metadata %>% filter(dex=="treated")
+```
+
+Let's try to filter counts to only display control data.
+```{r}
+control.inds <- metadata$dex == "control"
+control.ids <- metadata[control.inds,]$id
+
+# We can use the ids to access the control columns of our "counts" data and
+#   calculate the mean expression (columns) for each gene (row).
+
+head(counts[,control.ids])
+control.mean <- rowMeans(counts[,control.ids])
+head(control.mean)
+
+# Let's do the same for the drug treated columns in count.
+
+treated.inds <- metadata$dex == "treated"
+treated.ids <- metadata[treated.inds,]$id
+head(counts[,treated.ids])
+treated.mean <- rowMeans(counts[,treated.ids])
+head(treated.mean)
+
+# Let's put the control and treated means together for the sake of organization.
+meancounts <- data.frame(control.mean,treated.mean)
+head(meancounts)
+```
+
+# Comparing the data so far
+
+>Q5 (a). Create a scatter plot showing the mean of the treated samples against the mean of the control samples.
+
+Let's make a plot of our meancounts data frame.
+```{r}
+plot(meancounts)
+```
+>Q6. Try plotting both axes on a log scale. What is the argument to plot() that allows you to do this?
+
+```{r}
+plot(meancounts,log="xy")
+```
+
+The log argument, using "xy", allows for the axes to be rescaled.
+
+>Q5 (b).You could also use the ggplot2 package to make this figure producing the plot below. What geom_?() function would you use for this plot?
+
+```{r}
+library(ggplot2)
+ggplot(meancounts,aes(control.mean,treated.mean)) +
+  geom_point(alpha=0.2)
+```
+If you are using ggplot have a look at the function scale_x_continuous(trans="log2") and of course do the same for the y axis.
+
+```{r}
+library(ggplot2)
+ggplot(meancounts,aes(control.mean,treated.mean)) +
+  geom_point(alpha=0.2) + scale_x_continuous(trans="log10") +
+  scale_y_continuous(trans="log10")
+```
+
+
+We can use a log2-fold change to determine if expression has increased or
+decreased. See below:
+```{r}
+log2(10/10)
+log2(20/10)
+log2(10/20)
+```
+
+We can see that when expression remains unchanged (ie, log2 of 1), the output is
+0. When increasing, the log2 is positive. When decreasing, log2 is negative.
+
+```{r}
+meancounts$log2fc <- log2(meancounts[,"treated.mean"]/meancounts[,"control.mean"])
+head(meancounts)
+```
+
+We get some whacky results, like "NaN" (not a number) and -Inf (negative
+infinity). Let's fix this and drop the zero count genes/rows.
+
+The "which()" function will tell us the indices of TRUE entries in a logical
+vector. However, it's not that useful in default mode on our type of 
+multi-column input.
+
+>Q7. What is the purpose of the arr.ind argument in the which() function call above? Why would we then take the first column of the output and need to call the unique() function?
+
+In default mode, which() will return the column *and* row indices with zeroes.
+We only want to focus on the rows, so we can use the arr.ind=TRUE argument to 
+only return the value of rows in which a column value is 0.
+
+```{r}
+inds <- which(meancounts[,1:2]==0, arr.ind=TRUE)
+
+# After this, we now have rows containing zeroes; however, some rows are
+#   repeated if there are zeroes in both columns! We need to show only unique
+#   row numbers.
+
+rm.doubles <- unique(inds[,1])
+head(meancounts[rm.doubles,])
+
+# This gives us the rows which have zeroes, but we want non-zero rows (genes).
+#   We'll use the minus symbol to select for the opposite of our rm.doubles
+#   vector.
+
+mycounts <- meancounts[-rm.doubles,]
+head(mycounts)
+```
+
+We now have 'r nrow(mycounts)' genes remaining.
+
+```{r}
+nrow(mycounts)
+```
+
+How many of these genes are up regulated at the log2-fold-change threshold of 
++2 or greater?
+
+```{r}
+up.ind <- mycounts$log2fc > 2
+down.ind <- mycounts$log2fc < (-2)
+```
+
+>Q8. Using the up.ind vector above can you determine how many up regulated genes we have at the greater than 2 fc level? 
+
+```{r}
+sum(up.ind)
+```
+
+250 genes are up-regulated above the log2-fold-change threshold of +2.
+
+What percentage is this?
+```{r}
+round((sum(mycounts$log2fc > +2)/nrow(mycounts))*100,2)
+```
+
+1.15% of genes are up-regulated.
+
+>Q9. Using the down.ind vector above can you determine how many down regulated genes we have at the greater than 2 fc level?
+
+```{r}
+sum(down.ind)
+```
+
+367 genes are down-regulated below the log2-fold-change threshold of -2.
+
+>Q10. Do you trust these results? Why or why not?
+
+Not necessarily; there is a problem with this line of reasoning (ie. relying on
+log2-fold-change only), because observations can have large log2-fold-changes
+without necessarily having statistically significant p-values. Without p-values,
+we cannot state whether the changes to expression are truly significant.
+
+## 4. DESeq2 Analysis
+
+Let's load the package & citation.
+```{r}
+library(DESeq2)
+citation("DESeq2")
+```
+
+Let's start by importing our data.
+```{r}
+dds <- DESeqDataSetFromMatrix(countData=counts, 
+                              colData=metadata, 
+                              design=~dex)
+dds
+```
+
+Let's run DESeq on the dataset.
+
+```{r}
+dds <- DESeq(dds)
+res <- results(dds)
+head(res)
+```
+
+Let's generate a Volcano plot, which is a common viz approach for DESeq data.
+
+```{r}
+plot(res$log2FoldChange, res$padj)
+```
+Let's generate a more useful plot to identify genes of interest (with high
+log2-fold-changes and low p-values).
+
+```{r}
+plot(res$log2FoldChange,-log(res$padj))
+abline(v=c(2,-2),col="red")
+abline(h=-log(0.05),col="blue")
+```
+
+We want to focus on points in the upper left and right sectors, because these
+observations have log2-fold-changes with magnitude greater than 2 and 
+padj lower than 0.05.
+
+## 5. Adding annotation data
+
+We want to add meaningful gene names to our dataset so we can make sense of
+what is going on in our viz. To do so, we'll need two packages.
+
+**AnnotationDbi** will do the work, and **org.Hs.eg.db** contains the data we 
+will map between. We'll install these using BiocManager in the console.
+
+```{r}
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+```
+
+We can look at the types of data contained in org.Hs.eg.db using column().
+
+```{r}
+columns(org.Hs.eg.db)
+```
+
+Here we'll map to "SYMBOL" the common gene name that the world understands,
+which will make interpretation of our viz by others easier.
+
+```{r}
+res$symbol <- mapIds(org.Hs.eg.db,
+                     keys=row.names(res), # Our genenames
+                     keytype="ENSEMBL",        # The format of our genenames
+                     column="SYMBOL",          # The new format we want to add
+                     multiVals="first")
+```
+
+Let's take a look now.
+```{r}
+head(res)
+```
+
+>Q11. Run the mapIds() function two more times to add the Entrez ID and UniProt accession and GENENAME as new columns called res$entrez, res$uniprot and res$genename.
+
+```{r}
+res$entrez <- mapIds(org.Hs.eg.db,
+                     keys=row.names(res),
+                     column="ENTREZID",
+                     keytype="ENSEMBL",
+                     multiVals="first")
+
+res$uniprot <- mapIds(org.Hs.eg.db,
+                     keys=row.names(res),
+                     column="UNIPROT",
+                     keytype="ENSEMBL",
+                     multiVals="first")
+
+res$genename <- mapIds(org.Hs.eg.db,
+                     keys=row.names(res),
+                     column="GENENAME",
+                     keytype="ENSEMBL",
+                     multiVals="first")
+```
+
+Let's take a look at the output now.
+```{r}
+head(res)
+```
+
+Let's write res to a file to wrap up for the day.
+
+```{r}
+write.csv(res,file="allmyresults.csv")
+```
+
