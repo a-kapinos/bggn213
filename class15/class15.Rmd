@@ -5,7 +5,7 @@ date: "11/17/2021"
 output: html_document
 ---
 
-```{r}
+```{r message=FALSE}
 library(BiocManager)
 library(DESeq2)
 counts <- read.csv("airway_scaledcounts.csv", row.names=1)
@@ -46,7 +46,7 @@ all(metadata$id == colnames(counts))
 ```
 
 Let's try to filter metadata by dex using dplyr.
-```{r}
+```{r message=FALSE}
 library(dplyr)
 metadata.control <- metadata %>% filter(dex=="control")
 metadata.treated <- metadata %>% filter(dex=="treated")
@@ -251,7 +251,7 @@ what is going on in our viz. To do so, we'll need two packages.
 **AnnotationDbi** will do the work, and **org.Hs.eg.db** contains the data we 
 will map between. We'll install these using BiocManager in the console.
 
-```{r}
+```{r warning=FALSE}
 library("AnnotationDbi")
 library("org.Hs.eg.db")
 ```
@@ -267,7 +267,7 @@ which will make interpretation of our viz by others easier.
 
 ```{r}
 res$symbol <- mapIds(org.Hs.eg.db,
-                     keys=row.names(res), # Our genenames
+                     keys=row.names(res),      # Our genenames
                      keytype="ENSEMBL",        # The format of our genenames
                      column="SYMBOL",          # The new format we want to add
                      multiVals="first")
@@ -305,9 +305,83 @@ Let's take a look at the output now.
 head(res)
 ```
 
-Let's write res to a file to wrap up for the day.
+Let's write res to a file to save our progress thus far.
 
 ```{r}
 write.csv(res,file="allmyresults.csv")
 ```
+
+
+## Pathway analysis
+
+We will try to gain some biological insight using KEGG and looking for
+geneset enrichment.
+
+After installing "pathview", "gage", and "gageData" using BiocManager, we'll
+load the packages.
+
+```{r message=FALSE}
+library(pathview)
+library(gage)
+library(gageData)
+
+data(kegg.sets.hs)
+
+# Examine the first 2 pathways in this kegg set for humans
+head(kegg.sets.hs, 2)
+```
+
+Before we are able to us KEGG, we need to get our gene identifiers in the
+correct format, which is ENTREZ (at least for KEGG). I've already done this
+above, under Q11. Let's take another look using head().
+
+```{r}
+head(res)
+```
+
+From lab handout: The main gage() function requires a named vector of fold 
+changes, where the names of the values are the Entrez gene IDs.
+
+Note that we used the mapIDs() function above to obtain Entrez gene IDs 
+(stored in res$entrez) and we have the fold change results from DESeq2 
+analysis (stored in res$log2FoldChange).
+
+We can use the names() function to assign names (ie. entrez IDs) to observations 
+(ie. fold-changes) in the vector.
+
+```{r}
+foldchanges = res$log2FoldChange
+names(foldchanges) = res$entrez
+head(foldchanges)
+```
+
+Now we have our input and can pass it to gage(). We'll provide the vector and
+the geneset to look at.
+
+```{r}
+keggres = gage(foldchanges, gsets=kegg.sets.hs)
+
+# View object attributes using attributes(), tells us what is in the object.
+attributes(keggres)
+```
+
+We can use head() with dollar syntax to view named elements, like the first
+few down- (less) or up- (more) regulated pathways.
+
+Let's look at the first 3 down (less) pathways.
+
+```{r}
+head(keggres$less, 3)
+```
+
+Let's take a look at the Asthma pathway; to further investigate this pathway,
+we'll need to use the pathway ID (hsa05310). We can use pathview() to make a 
+figure from our KEGG analysis output.
+
+```{r message=FALSE}
+pathview(gene.data=foldchanges, pathway.id="hsa05310", low="blue", mid="green", high="yellow")
+```
+
+![](hsa05310.pathview.png)
+
 
