@@ -1,16 +1,31 @@
 ---
-title: "class15"
+title: "Class 15: Transcriptomics and the analysis of RNA-Seq data"
 author: "Andrew Kapinos"
 date: "11/17/2021"
-output: html_document
+output: pdf_document
 ---
 
-```{r message=FALSE}
+## 1. Bioconductor and DESeq2 setup
+
+We will need to install Bioconductor in the console (if not already installed), as well as DESeq2 through the Bioconductor installer. 
+
+Then, we can call the BiocManager and DESeq2 packages.
+
+```{r message=FALSE, warning=FALSE}
 library(BiocManager)
 library(DESeq2)
+```
+
+## 2. Import countData and colData
+
+Let's start by importing our data files. 
+
+```{r message=FALSE}
 counts <- read.csv("airway_scaledcounts.csv", row.names=1)
 metadata <- read.csv("airway_metadata.csv")
 ```
+
+Now we can take a look.
 
 ```{r}
 head(counts)
@@ -25,6 +40,7 @@ head(metadata)
 ```{r}
 nrow(counts)
 ```
+
 There are 38694 genes in the dataset.
 
 >Q2. How many ‘control’ cell lines do we have?
@@ -32,7 +48,10 @@ There are 38694 genes in the dataset.
 ```{r}
 sum(metadata$dex=="control")
 ```
+
 There are 4 control cell lines.
+
+## 3. Toy differential gene expression
 
 Let's check the correspondence of the metadata and count data setup. We will
 need to extract the 'id' column from metadata and the column names from count.
@@ -45,14 +64,18 @@ in the vector are TRUE. If any are FALSE, then all() will return FALSE.
 all(metadata$id == colnames(counts))
 ```
 
-Let's try to filter metadata by dex using dplyr.
+Let's try to filter metadata and counts by dex using dplyr.
+
 ```{r message=FALSE}
 library(dplyr)
-metadata.control <- metadata %>% filter(dex=="control")
-metadata.treated <- metadata %>% filter(dex=="treated")
+control <- metadata %>% filter(dex=="control")
+control.counts <- counts %>% dplyr::select(control$id) 
+control.mean <- rowSums(control.counts)/4
+head(control.mean)
 ```
 
-Let's try to filter counts to only display control data.
+Let's try to filter counts to only display control data using base R functions. We can then calculate the mean counts per gene across these samples.
+
 ```{r}
 control.inds <- metadata$dex == "control"
 control.ids <- metadata[control.inds,]$id
@@ -63,35 +86,38 @@ control.ids <- metadata[control.inds,]$id
 head(counts[,control.ids])
 control.mean <- rowMeans(counts[,control.ids])
 head(control.mean)
+```
 
-# Let's do the same for the drug treated columns in count.
+>Q3. How would you make the above code in either approach more robust?
 
+The example provided in the lab handout uses rowSums(control.counts)/4 to calculate the mean manually, which would not work properly if any additional samples were added to the dataset (ie. the denominator in the mean calculation would no longer be 4, as there would be more than 4 samples).
+
+This can be made more robust by using rowMeans() instead, as seen above.
+
+>Q4. Follow the same procedure for the treated samples (i.e. calculate the mean per gene across drug treated samples and assign to a labeled vector called treated.mean)
+
+```{r}
 treated.inds <- metadata$dex == "treated"
 treated.ids <- metadata[treated.inds,]$id
 head(counts[,treated.ids])
 treated.mean <- rowMeans(counts[,treated.ids])
 head(treated.mean)
+```
 
-# Let's put the control and treated means together for the sake of organization.
+Let's put the control and treated means together for the sake of organization.
+
+```{r}
 meancounts <- data.frame(control.mean,treated.mean)
 head(meancounts)
 ```
 
-# Comparing the data so far
-
 >Q5 (a). Create a scatter plot showing the mean of the treated samples against the mean of the control samples.
 
 Let's make a plot of our meancounts data frame.
+
 ```{r}
 plot(meancounts)
 ```
->Q6. Try plotting both axes on a log scale. What is the argument to plot() that allows you to do this?
-
-```{r}
-plot(meancounts,log="xy")
-```
-
-The log argument, using "xy", allows for the axes to be rescaled.
 
 >Q5 (b).You could also use the ggplot2 package to make this figure producing the plot below. What geom_?() function would you use for this plot?
 
@@ -100,7 +126,18 @@ library(ggplot2)
 ggplot(meancounts,aes(control.mean,treated.mean)) +
   geom_point(alpha=0.2)
 ```
-If you are using ggplot have a look at the function scale_x_continuous(trans="log2") and of course do the same for the y axis.
+
+We would use the geom_point() function here.
+
+>Q6. Try plotting both axes on a log scale. What is the argument to plot() that allows you to do this?
+
+```{r}
+plot(meancounts,log="xy")
+```
+
+The log argument, using "xy", allows for the axes to be rescaled.
+
+If we are using ggplot have a look at the function scale_x_continuous(trans="log2") and of course do the same for the y axis.
 
 ```{r}
 library(ggplot2)
@@ -109,9 +146,8 @@ ggplot(meancounts,aes(control.mean,treated.mean)) +
   scale_y_continuous(trans="log10")
 ```
 
+We can use a log2-fold change to determine if expression has increased or decreased. See below:
 
-We can use a log2-fold change to determine if expression has increased or
-decreased. See below:
 ```{r}
 log2(10/10)
 log2(20/10)
@@ -180,6 +216,7 @@ sum(up.ind)
 250 genes are up-regulated above the log2-fold-change threshold of +2.
 
 What percentage is this?
+
 ```{r}
 round((sum(mycounts$log2fc > +2)/nrow(mycounts))*100,2)
 ```
@@ -204,12 +241,14 @@ we cannot state whether the changes to expression are truly significant.
 ## 4. DESeq2 Analysis
 
 Let's load the package & citation.
+
 ```{r}
 library(DESeq2)
 citation("DESeq2")
 ```
 
 Let's start by importing our data.
+
 ```{r}
 dds <- DESeqDataSetFromMatrix(countData=counts, 
                               colData=metadata, 
@@ -224,24 +263,6 @@ dds <- DESeq(dds)
 res <- results(dds)
 head(res)
 ```
-
-Let's generate a Volcano plot, which is a common viz approach for DESeq data.
-
-```{r}
-plot(res$log2FoldChange, res$padj)
-```
-Let's generate a more useful plot to identify genes of interest (with high
-log2-fold-changes and low p-values).
-
-```{r}
-plot(res$log2FoldChange,-log(res$padj))
-abline(v=c(2,-2),col="red")
-abline(h=-log(0.05),col="blue")
-```
-
-We want to focus on points in the upper left and right sectors, because these
-observations have log2-fold-changes with magnitude greater than 2 and 
-padj lower than 0.05.
 
 ## 5. Adding annotation data
 
@@ -274,6 +295,7 @@ res$symbol <- mapIds(org.Hs.eg.db,
 ```
 
 Let's take a look now.
+
 ```{r}
 head(res)
 ```
@@ -301,6 +323,7 @@ res$genename <- mapIds(org.Hs.eg.db,
 ```
 
 Let's take a look at the output now.
+
 ```{r}
 head(res)
 ```
@@ -311,8 +334,62 @@ Let's write res to a file to save our progress thus far.
 write.csv(res,file="allmyresults.csv")
 ```
 
+# 6. Data Visualization
 
-## Pathway analysis
+Let's generate a Volcano plot, which is a common viz approach for DESeq data.
+
+```{r}
+plot(res$log2FoldChange, res$padj,
+     xlab="Log2(FoldChange)",
+     ylab="padj")
+```
+
+Let's generate a more useful plot to identify genes of interest (with high
+log2-fold-changes and low p-values).
+
+```{r}
+plot(res$log2FoldChange,-log(res$padj),
+     xlab="Log2(FoldChange)",
+     ylab="-Log(P-value)")
+abline(v=c(2,-2),col="darkgray", lty=2)
+abline(h=-log(0.05),col="darkgray", lty=2)
+```
+
+We want to focus on points in the upper left and right sectors, because these
+observations have log2-fold-changes with magnitude greater than 2 and 
+padj lower than 0.05.
+
+We can add some additional information by coloring the points associated with these features.
+
+```{r}
+# Setup our custom point color vector 
+mycols <- rep("gray", nrow(res))
+mycols[ abs(res$log2FoldChange) > 2 ]  <- "red" 
+
+inds <- (res$padj < 0.01) & (abs(res$log2FoldChange) > 2 )
+mycols[ inds ] <- "blue"
+
+# Volcano plot with custom colors 
+plot( res$log2FoldChange,  -log(res$padj), 
+ col=mycols, ylab="-Log(P-value)", xlab="Log2(FoldChange)" )
+
+# Cut-off lines
+abline(v=c(-2,2), col="gray", lty=2)
+abline(h=-log(0.1), col="gray", lty=2)
+```
+
+There is also a package called EnhancedVolcano that makes our visualization even more powerful.
+
+```{r message=FALSE, warning=FALSE}
+library(EnhancedVolcano)
+x <- as.data.frame(res)
+EnhancedVolcano(x,
+    lab = x$symbol,
+    x = 'log2FoldChange',
+    y = 'pvalue')
+```
+
+## 7. Pathway analysis
 
 We will try to gain some biological insight using KEGG and looking for
 geneset enrichment.
@@ -384,4 +461,39 @@ pathview(gene.data=foldchanges, pathway.id="hsa05310", low="blue", mid="green", 
 
 ![](hsa05310.pathview.png)
 
+## Optional: Plotting counts for genes of interest
+
+DESeq2 offers a function called plotCounts() that plots the DESeqDataSet by gene and variable of interest in colData.
+
+Let's take a look at the the geneID is for the CRISPLD2 gene.
+
+```{r}
+i <- grep("CRISPLD2", res$symbol)
+res[i,]
+rownames(res[i,])
+```
+
+Now, with the geneID in hand, we can plot counts for our intgroup, ie. the dex column.
+
+```{r}
+plotCounts(dds, gene="ENSG00000103196", intgroup="dex")
+```
+
+Nice, but let's try piping this to ggplot to make a better figure.
+
+```{r}
+d <- plotCounts(dds, gene="ENSG00000103196", intgroup="dex", returnData=TRUE)
+head(d)
+boxplot(count ~ dex , data=d)
+```
+
+This is looking good, now let's take the data.frame returned by R to plot using ggplot2.
+
+```{r}
+library(ggplot2)
+ggplot(d, aes(dex, count, fill=dex)) + 
+  geom_boxplot() + 
+  scale_y_log10() + 
+  ggtitle("CRISPLD2")
+```
 
