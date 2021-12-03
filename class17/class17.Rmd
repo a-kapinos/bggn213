@@ -2,9 +2,7 @@
 title: "Class 17 Mini-Project: COVID-19 Vaccination Rates"
 author: "Andrew Kapinos"
 date: "11/28/2021"
-output:
-   pdf_document:
-     latex_engine: xelatex
+output: github_document
 ---
 
 ## Getting Started
@@ -309,7 +307,3 @@ ggplot(vax.36.all) +
        subtitle="Only areas with a population above 36k are shown") +
   geom_hline(yintercept = mean.vax.36, linetype="dashed")
 ```
-
->Q21. How do you feel about traveling for Thanksgiving and meeting for in-person class next Week?
-
-Nervous but optimistic! Flying/traveling while still in a pandemic is quite concerning, but I am very excited to visit my family as they live in Chicago and I don't get to see them often.
