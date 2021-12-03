@@ -17,6 +17,8 @@ heatmap(iden, margins = c(12,12))
 ## Question 8
 
 ``` r
+library(bio3d)
+
 # Write consensus sequence to fasta file, BLAST, identify top hits
 consensus <- paste(consensus(aln)$seq,collapse="")
 write.fasta(seqs=consensus,file="consensus.fasta")
@@ -24,8 +26,8 @@ consensus.fasta <- read.fasta("consensus.fasta")
 consensus.blast <- blast.pdb(consensus.fasta)
 ```
 
-    ##  Searching ... please wait (updates every 5 seconds) RID = T3HKV865013 
-    ##  .......................
+    ##  Searching ... please wait (updates every 5 seconds) RID = UKJ3PYV001R 
+    ##  .
     ##  Reporting 100 hits
 
 ``` r
@@ -96,8 +98,8 @@ ferret <- read.fasta("ferret.fasta")
 ferret.blast <- blast.pdb(ferret)
 ```
 
-    ##  Searching ... please wait (updates every 5 seconds) RID = T3HS7C0D013 
-    ##  ....................
+    ##  Searching ... please wait (updates every 5 seconds) RID = UKJ400VB01R 
+    ##  ...............................
     ##  Reporting 104 hits
 
 ``` r
@@ -163,11 +165,11 @@ consensus.aln.pdb <- function(fasta, x) {
   consensus.hits.combined
 }
 
-consensus.aln.pdb("find-a-gene_alignment.fasta",10)
+consensus.aln.pdb("find-a-gene_alignment.fasta",8)
 ```
 
-    ##  Searching ... please wait (updates every 5 seconds) RID = T3HW3VFK016 
-    ##  ...........................................................................................
+    ##  Searching ... please wait (updates every 5 seconds) RID = UKJA99V101R 
+    ##  ...............................................................
     ##  Reporting 100 hits
 
     ##        structureId experimentalTechnique resolution       source evalue
@@ -179,8 +181,6 @@ consensus.aln.pdb("find-a-gene_alignment.fasta",10)
     ## 4JWM_A        4JWM                 X-ray       2.00 Homo sapiens      0
     ## 6CR3_A        6CR3                 X-ray       1.95 Homo sapiens      0
     ## 6NKR_A        6NKR                 X-ray       2.45 Homo sapiens      0
-    ## 6BTE_A        6BTE                 X-ray       2.20 Homo sapiens      0
-    ## 4R63_A        4R63                 X-ray       1.85 Homo sapiens      0
     ##        identity
     ## 1BPX_A   98.689
     ## 5VRW_A   98.689
@@ -190,5 +190,3 @@ consensus.aln.pdb("find-a-gene_alignment.fasta",10)
     ## 4JWM_A   98.361
     ## 6CR3_A   98.361
     ## 6NKR_A   98.361
-    ## 6BTE_A   98.361
-    ## 4R63_A   98.361

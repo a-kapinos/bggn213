@@ -17,6 +17,8 @@ heatmap(iden, margins = c(12,12))
 ## Question 8
 
 ```{r}
+library(bio3d)
+
 # Write consensus sequence to fasta file, BLAST, identify top hits
 consensus <- paste(consensus(aln)$seq,collapse="")
 write.fasta(seqs=consensus,file="consensus.fasta")
@@ -102,6 +104,6 @@ consensus.aln.pdb <- function(fasta, x) {
   consensus.hits.combined
 }
 
-consensus.aln.pdb("find-a-gene_alignment.fasta",10)
+consensus.aln.pdb("find-a-gene_alignment.fasta",8)
 ```
 
