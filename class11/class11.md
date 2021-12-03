@@ -150,8 +150,8 @@ conformational variability and intrinsic dynamics of this protein.
 m <- nma(pdb)
 ```
 
-    ##  Building Hessian...     Done in 0.021 seconds.
-    ##  Diagonalizing Hessian...    Done in 0.103 seconds.
+    ##  Building Hessian...     Done in 0.023 seconds.
+    ##  Diagonalizing Hessian...    Done in 0.249 seconds.
 
 ``` r
 plot(m)

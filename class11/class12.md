@@ -69,8 +69,8 @@ mode analysis”.
 modes <- nma(pdb)
 ```
 
-    ##  Building Hessian...     Done in 0.048 seconds.
-    ##  Diagonalizing Hessian...    Done in 0.203 seconds.
+    ##  Building Hessian...     Done in 0.032 seconds.
+    ##  Diagonalizing Hessian...    Done in 0.111 seconds.
 
 ``` r
 plot(modes)
@@ -478,13 +478,13 @@ plot(pc)
 In the above PC plots, each dot represents one PDB structure.
 
 We can visualize the displacements, ie. movement of the structure, that
-are captured by PC1
+are captured by PC1. The pca.pdb file generated can be viewed in VMD.
 
 ``` r
 mktrj(pc, pc=1, file="pca.pdb")
 ```
 
-Let’s save our important results
+If we’d like, we can save our important results.
 
 ``` r
 # save(hits,pc,file="class12results.RData")
