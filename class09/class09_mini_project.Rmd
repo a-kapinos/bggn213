@@ -1,8 +1,8 @@
 ---
-title: "class09 Mini Lab Project"
+title: "class09: Breast Cancer Mini-Project"
 author: "Andrew Kapinos"
 date: "10/27/2021"
-output: pdf_document
+output: github_document
 ---
 
 ## Getting organized, Preparing the Data
