@@ -2,9 +2,7 @@
 title: "Class 10: Halloween Mini-Project"
 author: "Andrew Kapinos"
 date: "10/29/2021"
-output: 
-  pdf_document:
-    latex_engine: xelatex
+output: github_document
 ---
 ## 1. Importing Candy Data
 
