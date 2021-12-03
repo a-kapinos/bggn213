@@ -9,7 +9,7 @@ Introduction to Bioinformatics at UC San Diego, Fall 2021
 - 06b - [Improving functions in R]()
 - 08 - [Introduction to machine learning]()
 - 09 - [Analysis of Human Breast Cancer Cells]()
-- 10 - [Halloween candy mini-analysis]()
+- [Halloween candy mini-analysis](https://github.com/a-kapinos/bggn213/blob/main/class10/class10.md)
 - 11a - [Structural bioinformatics, part 1]()
 - 11b - [Structural bioinformatics, part 2]()
 - 15 - [Transcriptomics and analysis of RNA-Seq data]()
