@@ -2,7 +2,7 @@
 title: "DESeq Mini Project: Pathway Analysis from RNA-Seq Results"
 author: "Andrew Kapinos"
 date: "11/19/2021"
-output: pdf_document
+output: github_document
 ---
 
 ## Section 1. Differential Expression Analysis
