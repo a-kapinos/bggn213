@@ -1,0 +1,42 @@
+---
+title: "Class 19: Genome informatics"
+author: "Andrew Kapinos"
+date: "12/1/2021"
+output: github_document
+---
+>Q13: Read this file into R and determine the sample size for each genotype and their corresponding median expression levels for each of these genotypes.
+
+```{r message=FALSE}
+data <- read.table("rs8067378_ENSG00000172057.6.txt")
+table(data$geno)
+print(paste("The sample size for genotype A/A is", table(data$geno)["A/A"]))
+print(paste("The sample size for genotype A/G is", table(data$geno)["A/G"]))
+print(paste("The sample size for genotype G/G is", table(data$geno)["G/G"]))
+
+library(dplyr)
+summary(data[data$geno=="A/A",]$exp)
+print(paste("The median expression value for genotype A/A is",
+            round(summary(data[data$geno=="A/A",]$exp)["Median"],3)))
+summary(data[data$geno=="A/G",]$exp)
+print(paste("The median expression value for genotype A/G is",
+            round(summary(data[data$geno=="A/G",]$exp)["Median"],3)))
+summary(data[data$geno=="G/G",]$exp)
+print(paste("The median expression value for genotype G/G is", 
+            round(summary(data[data$geno=="G/G",]$exp)["Median"],3)))
+```
+
+>Q14: Generate a boxplot with a box per genotype, what could you infer from the relative expression value between A/A and G/G displayed in this plot? Does the SNP effect the expression of ORMDL3?
+
+```{r message=FALSE}
+library(ggplot2)
+ggplot(data,aes(geno,exp)) +
+  geom_boxplot(notch=TRUE,aes(fill=geno),outlier.shape=NA) +
+  geom_point(alpha=0.4,position=position_jitter(0.2)) +
+  labs(x="Genotype", y="Expression") +
+  theme(legend.position="none")
+t.test(data[data$geno=="A/A",]$exp,data[data$geno=="G/G",]$exp)
+```
+
+On average, the A/A genotype results in **relatively higher** expression levels when compared to the G/G genotype. Given the results of the boxplot, it would appear as though the SNP does in fact affect expression of ORMDL3.
+
+A Student's t-test confirms that the difference in means is statistically significant, with a p-value of 2.2e-16.
