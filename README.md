@@ -15,4 +15,4 @@ Introduction to Bioinformatics at UC San Diego, Fall 2021
 - [Transcriptomics and analysis of RNA-Seq data, part 1](https://github.com/a-kapinos/bggn213/blob/main/class15/class15.md)
 - [Transcriptomics and analysis of RNA-Seq data, part 2](https://github.com/a-kapinos/bggn213/blob/main/class15/DESeq2_mini_proj.md)
 - [COVID Vaccination Rate Analysis](https://github.com/a-kapinos/bggn213/blob/main/class17/class17.md)
-- Genome informatics and high throughput sequencing (TBP)
+- [Genome informatics and high throughput sequencing](https://github.com/a-kapinos/bggn213/blob/main/class19/class19.md)
