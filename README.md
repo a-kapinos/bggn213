@@ -1,6 +1,6 @@
-# Bioinformatics Portfolio
+# Andrew Kapinos Bioinformatics Portfolio
 
-Introduction to Bioinformatics at UC San Diego, Fall 2021
+The following work was completed as part of the course entitled "BGGN 213: Introduction to Bioinformatics" at UC San Diego in Fall 2021.
 
 ## Contents:
 
